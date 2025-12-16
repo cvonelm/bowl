@@ -7,6 +7,7 @@ project(bowl VERSION 0.0.1)
 add_library(bowl src/error.cpp)
 target_include_directories(bowl PUBLIC include)
 
+add_library(Bowl::bowl ALIAS bowl)
 if(PROJECT_IS_TOP_LEVEL)
     find_package(Catch2 REQUIRED)
     include(CTest)
