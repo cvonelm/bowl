@@ -3,6 +3,7 @@
 #include <bowl/error.hpp>
 #include <bowl/exception.hpp>
 #include <bowl/expected.hpp>
+#include <bowl/macros.hpp>
 #include <bowl/maybe_error.hpp>
 #include <bowl/unexpected.hpp>
 
@@ -114,8 +115,9 @@ TEST_CASE("Can move unexpected", "[can_move_expected]")
 
     bowl::Unexpected<ErrorCase> unexp2 = std::move(unexp);
 
-    REQUIRE_THROWS_AS(unexp.unpack(),
-                      bowl::MovedOutException); // NOLINT(clang-analyzer-cplusplus.Move)
+    // NOLINTBEGIN(clang-analyzer-cplusplus.Move)
+    REQUIRE_THROWS_AS(unexp.unpack(), bowl::MovedOutException);
+    // NOLINTEND(clang-analyzer-cplusplus.Move)
 
     ErrorCase ec2;
 
@@ -238,8 +240,10 @@ TEST_CASE("Move on MaybeError works", "[maybe_error_move]")
     bowl::MaybeError<ErrorCase> err{ std::move(ec) };
     bowl::MaybeError<ErrorCase> err2{ std::move(err) };
 
-    REQUIRE_THROWS_AS(err.unpack_error(),
-                      bowl::MovedOutException); // NOLINT(clang-analyzer-cplusplus.Move)
+    // NOLINTBEGIN(clang-analyzer-cplusplus.Move)
+    REQUIRE_THROWS_AS(err.unpack_error(), bowl::MovedOutException);
+    // NOLINTEND(clang-analyzer-cplusplus.Move)
+
     REQUIRE_THROWS_AS(err.throw_if_error(), bowl::MovedOutException);
 
     ErrorCase ec2;
@@ -346,4 +350,41 @@ TEST_CASE("CustomError works", "[custom_error_works]")
     REQUIRE(err2.display() == "foobar");
 
     REQUIRE_THROWS_AS(err2.throw_as_exception(), bowl::CustomException);
+}
+
+bowl::Expected<int, bowl::CustomError> returning_error()
+{
+    return bowl::Unexpected(bowl::CustomError("I'm an error!"));
+}
+
+bowl::Expected<int, bowl::CustomError> forwarding_error()
+{
+    CHECK_ASSIGN(foo, returning_error());
+
+    return foo;
+}
+
+bowl::Expected<int, bowl::CustomError> returning_value()
+{
+    return 42;
+}
+
+bowl::Expected<int, bowl::CustomError> forwarding_value()
+{
+    CHECK_ASSIGN(foo, returning_value());
+
+    return foo;
+}
+
+TEST_CASE("CHECK_ASSIGN works")
+{
+    auto res = forwarding_error();
+
+    REQUIRE(!res.ok());
+    REQUIRE(res.unpack_error().display() == "I'm an error!");
+
+    auto res2 = forwarding_value();
+
+    REQUIRE(res2.ok());
+    REQUIRE(res2.unpack_ok() == 42);
 }
