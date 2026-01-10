@@ -3,6 +3,7 @@
 #pragma once
 
 #include <exception>
+#include <string>
 
 namespace bowl
 {
@@ -21,15 +22,40 @@ public:
 
 /**
  *
- * Exception thrown if you try to unpack_ok() an Expected that is !ok(), or
- * unpack_error() an Expected that is ok()
+ * Exception thrown if you try to unpack_error() an Expected/MaybeError
+ * that is actually ok()
  */
-class FalseStateException : public std::exception
+class UnpackErrorIfOkException : public std::exception
 {
 public:
     const char* what() const noexcept override
     {
-        return "Trying to unpack an error/ok-state that was not an error/ok-state";
+        return "Trying to access unpack_error(), but object was in ok() state!";
     }
 };
+
+/**
+ *
+ * Exception thrown if you try to unpack_ok() an Expected/MaybeError
+ * that is actually !ok()
+ */
+template <class E>
+class UnpackOkIfErrorException : public std::exception
+{
+public:
+    UnpackOkIfErrorException(const E& err)
+    {
+        what_ =
+            "Trying to access unpack_ok() but object was in !ok() state, error: " + err.display();
+    }
+
+    const char* what() const noexcept override
+    {
+        return what_.c_str();
+    }
+
+private:
+    std::string what_;
+};
+
 } // namespace bowl

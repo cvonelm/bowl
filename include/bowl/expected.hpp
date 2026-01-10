@@ -110,7 +110,7 @@ public:
 
         if (!ok_)
         {
-            throw FalseStateException();
+            throw UnpackOkIfErrorException(e_);
         }
 
         is_moved_ = true;
@@ -130,7 +130,7 @@ public:
 
         if (ok_)
         {
-            throw FalseStateException();
+            throw UnpackErrorIfOkException();
         }
 
         is_moved_ = true;

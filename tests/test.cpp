@@ -160,7 +160,7 @@ TEST_CASE("MaybeError::ok() work", "[maybe_error_ok_works]")
 
     REQUIRE(e.ok());
 
-    REQUIRE_THROWS_AS(e.unpack_error(), bowl::FalseStateException);
+    REQUIRE_THROWS_AS(e.unpack_error(), bowl::UnpackErrorIfOkException);
 
     REQUIRE(num_constructed == 0);
     REQUIRE(num_copy_constructed == 0);
@@ -268,7 +268,7 @@ TEST_CASE("Can create ok Expected", "[can_create_ok_expected]")
 
     REQUIRE(ok_expected.ok());
 
-    REQUIRE_THROWS_AS(ok_expected.unpack_error(), bowl::FalseStateException);
+    REQUIRE_THROWS_AS(ok_expected.unpack_error(), bowl::UnpackErrorIfOkException);
 
     REQUIRE_NOTHROW(ok_expected.throw_if_error());
 
@@ -296,7 +296,7 @@ TEST_CASE("Can create error Expected", "[can_create_error_expected]")
 
     REQUIRE(!err_expected.ok());
 
-    REQUIRE_THROWS_AS(err_expected.unpack_ok(), bowl::FalseStateException);
+    REQUIRE_THROWS_AS(err_expected.unpack_ok(), bowl::UnpackOkIfErrorException<ErrorCase>);
 
     ErrorCase ec2;
     REQUIRE_NOTHROW(ec2 = err_expected.unpack_error());
@@ -344,7 +344,7 @@ TEST_CASE("CustomError works", "[custom_error_works]")
 
     REQUIRE(!exp.ok());
 
-    REQUIRE_THROWS_AS(exp.unpack_ok(), bowl::FalseStateException);
+    REQUIRE_THROWS_AS(exp.unpack_ok(), bowl::UnpackOkIfErrorException<bowl::CustomError>);
 
     bowl::CustomError err2 = exp.unpack_error();
     REQUIRE(err2.display() == "foobar");

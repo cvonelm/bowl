@@ -75,7 +75,7 @@ public:
      * If this MaybeError is !ok(), consume it and return the
      * contained error.
      *
-     * Throws FalseStateException if unpack_error() is called
+     * Throws UnpackErrorIfOkException if unpack_error() is called
      * on a ok() MaybeError.
      *
      * Throws MovedOutException if this MaybeError has already been
@@ -87,7 +87,7 @@ public:
 
         if (ok_)
         {
-            throw FalseStateException();
+            throw UnpackErrorIfOkException();
         }
         is_moved_ = true;
 
