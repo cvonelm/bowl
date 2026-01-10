@@ -266,4 +266,12 @@ private:
     std::string str_;
 };
 
+inline ErrnoException::ErrnoException(ErrnoError err) : errno_(err.errnum())
+{
+}
+
+inline CustomException::CustomException(CustomError err) : err_(err.display())
+{
+}
+
 } // namespace bowl
