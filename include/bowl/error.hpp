@@ -15,6 +15,7 @@ namespace bowl
  */
 enum class Errno : int
 {
+    __OK = 0,
     NOMEM = ENOMEM,
     PERM = EPERM,
     NOENT = ENOENT,
@@ -200,7 +201,14 @@ public:
 
     std::string display() const override
     {
-        return strerror(static_cast<int>(errno_));
+        if (errno_ != Errno::__OK)
+        {
+            return strerror(static_cast<int>(errno_));
+        }
+        else
+        {
+            return "No error!";
+        }
     }
 
     enum Errno errnum()
