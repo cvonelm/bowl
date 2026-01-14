@@ -137,27 +137,6 @@ public:
         return std::move(e_);
     }
 
-    /**
-     *
-     * If this Expected is !ok(), throw the contained Error
-     * via its throw_as_exception() method.
-     *
-     * If this Expected is ok(), do nothing.
-     *
-     * Throws MovedOutException if this Expected has already succesfully
-     * been unpacked.
-     */
-    void throw_if_error()
-    {
-        if (!ok_)
-        {
-            check_if_moved();
-
-            is_moved_ = true;
-            e_.throw_as_exception();
-        }
-    }
-
     ~Expected()
     {
         if (!ok_)

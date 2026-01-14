@@ -162,30 +162,6 @@ public:
      * Give a human-readable representation of the error.
      */
     virtual std::string display() const = 0;
-    /**
-     *
-     * Throw the given Error type as a corresponding exception.
-     */
-    virtual void throw_as_exception() const = 0;
-};
-class ErrnoError;
-
-/**
- *
- * Corresponding exception to ErrnoError, thrown on ErrnoError::throw_as_exception()
- */
-class ErrnoException : std::exception
-{
-public:
-    ErrnoException(ErrnoError err);
-
-    const char* what() const noexcept override
-    {
-        return strerror(static_cast<int>(errno_));
-    }
-
-protected:
-    Errno errno_;
 };
 
 /**
@@ -216,33 +192,8 @@ public:
         return errno_;
     }
 
-    [[noreturn]] void throw_as_exception() const override
-    {
-        throw ErrnoException(*this);
-    }
-
 private:
     enum Errno errno_;
-};
-
-class CustomError;
-
-/**
- *
- * Corresponding exception type to CustomError
- */
-class CustomException : public std::exception
-{
-public:
-    CustomException(CustomError err);
-
-    const char* what() const noexcept override
-    {
-        return err_.c_str();
-    }
-
-protected:
-    std::string err_;
 };
 
 /**
@@ -261,11 +212,6 @@ public:
         return str_;
     }
 
-    [[noreturn]] void throw_as_exception() const override
-    {
-        throw CustomException(*this);
-    }
-
 private:
     CustomError()
     {
@@ -273,13 +219,5 @@ private:
 
     std::string str_;
 };
-
-inline ErrnoException::ErrnoException(ErrnoError err) : errno_(err.errnum())
-{
-}
-
-inline CustomException::CustomException(CustomError err) : err_(err.display())
-{
-}
 
 } // namespace bowl

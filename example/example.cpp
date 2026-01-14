@@ -13,11 +13,6 @@ public:
     {
         return "Can not take root of negative number!";
     }
-
-    [[noreturn]] void throw_as_exception() const override
-    {
-        throw std::runtime_error(display());
-    }
 };
 
 bowl::Expected<int, NegativeNumberError> root(int num)

@@ -14,15 +14,6 @@
 uint64_t num_constructed = 0;
 uint64_t num_copy_constructed = 0;
 
-class CustomException : public std::exception
-{
-public:
-    const char* what() const noexcept override
-    {
-        return "I am a little custom exception type";
-    }
-};
-
 class ErrorCase : public bowl::Error
 {
 public:
@@ -40,11 +31,6 @@ public:
     {
         num_copy_constructed++;
         return *this;
-    }
-
-    [[noreturn]] void throw_as_exception() const override
-    {
-        throw CustomException();
     }
 
     std::string display() const override
@@ -202,12 +188,10 @@ TEST_CASE("MaybeError::throw_if_error works", "[maybe_error_throw_if_error() wor
     bowl::MaybeError<ErrorCase> err{ ErrorCase() };
 
     REQUIRE(!err.ok());
-    REQUIRE_THROWS_AS(err.throw_if_error(), CustomException);
 
     bowl::MaybeError<ErrorCase> err2{};
 
     REQUIRE(err2.ok());
-    REQUIRE_NOTHROW(err2.throw_if_error());
 
     REQUIRE(num_constructed == 1);
     REQUIRE(num_copy_constructed == 0);
@@ -221,8 +205,6 @@ TEST_CASE("Can't call MaybeError::throw_if_error twice", "[maybe_error_throw_if_
     bowl::MaybeError<ErrorCase> err{ ErrorCase() };
 
     REQUIRE(!err.ok());
-    REQUIRE_THROWS_AS(err.throw_if_error(), CustomException);
-    REQUIRE_THROWS_AS(err.throw_if_error(), bowl::MovedOutException);
 
     REQUIRE(num_constructed == 1);
     REQUIRE(num_copy_constructed == 0);
@@ -243,8 +225,6 @@ TEST_CASE("Move on MaybeError works", "[maybe_error_move]")
     // NOLINTBEGIN(clang-analyzer-cplusplus.Move)
     REQUIRE_THROWS_AS(err.unpack_error(), bowl::MovedOutException);
     // NOLINTEND(clang-analyzer-cplusplus.Move)
-
-    REQUIRE_THROWS_AS(err.throw_if_error(), bowl::MovedOutException);
 
     ErrorCase ec2;
     REQUIRE_NOTHROW(ec2 = err2.unpack_error());
@@ -269,8 +249,6 @@ TEST_CASE("Can create ok Expected", "[can_create_ok_expected]")
     REQUIRE(ok_expected.ok());
 
     REQUIRE_THROWS_AS(ok_expected.unpack_error(), bowl::UnpackErrorIfOkException);
-
-    REQUIRE_NOTHROW(ok_expected.throw_if_error());
 
     OkCase ok2;
     REQUIRE_NOTHROW(ok2 = ok_expected.unpack_ok());
@@ -310,22 +288,6 @@ TEST_CASE("Can create error Expected", "[can_create_error_expected]")
     REQUIRE(num_copy_constructed == 0);
 }
 
-TEST_CASE("Expected::throw_if_error()", "[expected_throw_if_error_works]")
-{
-    num_constructed = 0;
-    num_copy_constructed = 0;
-
-    ErrorCase ec;
-    ec.errnum = 52;
-
-    bowl::Expected<OkCase, ErrorCase> err_expected(std::move(ec));
-
-    REQUIRE_THROWS_AS(err_expected.throw_if_error(), CustomException);
-    REQUIRE_THROWS_AS(err_expected.throw_if_error(), bowl::MovedOutException);
-    REQUIRE_THROWS_AS(err_expected.unpack_error(), bowl::MovedOutException);
-    REQUIRE_THROWS_AS(err_expected.unpack_ok(), bowl::MovedOutException);
-}
-
 TEST_CASE("ErrnoError works", "[errno_error_works]")
 {
     errno = ENOMEM;
@@ -334,8 +296,6 @@ TEST_CASE("ErrnoError works", "[errno_error_works]")
     REQUIRE(errno_error.errnum() == bowl::Errno::NOMEM);
     REQUIRE(static_cast<int>(errno_error.errnum()) == ENOMEM);
     REQUIRE(errno_error.display() == "Cannot allocate memory");
-
-    REQUIRE_THROWS_AS(errno_error.throw_as_exception(), bowl::ErrnoException);
 }
 
 TEST_CASE("CustomError works", "[custom_error_works]")
@@ -348,8 +308,6 @@ TEST_CASE("CustomError works", "[custom_error_works]")
 
     bowl::CustomError err2 = exp.unpack_error();
     REQUIRE(err2.display() == "foobar");
-
-    REQUIRE_THROWS_AS(err2.throw_as_exception(), bowl::CustomException);
 }
 
 bowl::Expected<int, bowl::CustomError> returning_error()

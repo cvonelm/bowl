@@ -94,26 +94,6 @@ public:
         return std::move(e_);
     }
 
-    /**
-     *
-     * If this MaybeError is !ok(), throw the contained
-     * error via its throw_as_exception() method.
-     *
-     * Does nothing if MaybeError is ok().
-     *
-     * Throws MovedOutException if this MaybeError has
-     * already been consumed.
-     */
-    void throw_if_error()
-    {
-        if (!ok_)
-        {
-            check_is_moved();
-            is_moved_ = true;
-            e_.throw_as_exception();
-        }
-    }
-
     ~MaybeError()
     {
         if (!ok_)

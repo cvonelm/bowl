@@ -21,11 +21,6 @@ public:
     {
         return "Can not take root of negative number!";
     }
-
-    [[noreturn]] void throw_as_exception() const override
-    {
-        throw std::runtime_error(display());
-    }
 };
 
 
@@ -115,7 +110,6 @@ Most noticeably, this means that you can not unpack the same Expected twice.
 
 The derived class needs to implement to virtual functions:
 - `std::string display() const` Create a human-readable string for displaying the error
-- `[[noreturn]] void throw_as_exception() const` Create an exception from this error and throw it.
 
 `bowl` contains two predefined Error Types:
 - `ErrnoError` creates a `bowl::Error` from the current value of `errno`
