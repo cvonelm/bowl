@@ -5,7 +5,7 @@ project(bowl VERSION 0.0.1)
 
 
 add_library(bowl INTERFACE)
-target_include_directories(bowl INTERFACE include)
+target_include_directories(bowl INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>")
 
 add_library(Bowl::bowl ALIAS bowl)
 if(PROJECT_IS_TOP_LEVEL)
@@ -24,16 +24,11 @@ if(PROJECT_IS_TOP_LEVEL)
     target_link_libraries(example PRIVATE bowl)
 
 
-    include(GNUInstallDirs)
-
-    set(BOWL_HEADERS
-        include/bowl/error.hpp
-        include/bowl/exception.hpp
-        include/bowl/expected.hpp
-        include/bowl/maybe_error.hpp
-        include/bowl/unexpected.hpp)
-    set_target_properties(bowl PROPERTIES PUBLIC_HEADER "${BOWL_HEADERS}")
-    install(TARGETS bowl
-        PUBLIC_HEADER
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/bowl)
 endif()
+
+include(GNUInstallDirs)
+install(
+    DIRECTORY "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/bowl>"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    FILES_MATCHING PATTERN "*.hpp"
+)
