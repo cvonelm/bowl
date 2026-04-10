@@ -11,13 +11,13 @@
 class NegativeNumberError : bowl::Error
 {
 public:
-    std::string display() const override
+    [[nodiscard]] std::string display() const override
     {
         return "Can not take root of negative number!";
     }
 };
 
-bowl::Expected<int, NegativeNumberError> root(int num)
+bowl::Expected<double, NegativeNumberError> root(int num)
 {
     if (num < 0)
     {
@@ -26,9 +26,9 @@ bowl::Expected<int, NegativeNumberError> root(int num)
     return sqrt(num);
 }
 
-int main(void)
+int main()
 {
-    int num;
+    int num = 0;
     std::cout << "Give a number to take a root of: ";
     std::cin >> num;
 

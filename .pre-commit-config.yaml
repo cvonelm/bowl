@@ -12,7 +12,7 @@ repos:
     rev: v1.3.5
     hooks:
     - id: clang-tidy
-      args: ["-checks='clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,-modernize-use-trailing-return-type,-cppcoreguidelines-pro-type-union-access", "--use-color"]
+      args: ["-checks='clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,-modernize-use-trailing-return-type,-cppcoreguidelines-pro-type-union-access", "--header-filter=*", "--use-color"]
     - id: clang-format
       args: ["--style=file"]
 - repo: https://codeberg.org/fsfe/reuse-tool

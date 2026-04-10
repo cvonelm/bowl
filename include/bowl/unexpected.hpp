@@ -22,7 +22,7 @@ template <class E>
 class Unexpected
 {
 public:
-    Unexpected(E&& e) : e_(std::move(e)), is_moved_(false)
+    Unexpected(E&& e) noexcept : e_(std::move(e)), is_moved_(false)
     {
     }
 
@@ -31,7 +31,7 @@ public:
     Unexpected(Unexpected<E>& other) = delete;
     Unexpected<E>& operator=(Unexpected<E>&) = delete;
 
-    Unexpected<E>& operator=(Unexpected<E>&& other)
+    Unexpected<E>& operator=(Unexpected<E>&& other) noexcept
     {
         this->e_ = std::move(other.e_);
         this->is_moved_ = other.is_moved_;
@@ -41,11 +41,9 @@ public:
         return *this;
     }
 
-    Unexpected(Unexpected<E>&& other)
-    {
-        this->e_ = std::move(other.e_);
-        this->is_moved_ = other.is_moved_;
+    Unexpected(Unexpected<E>&& other) noexcept : is_moved_(other.is_moved_), e_(other.e_)
 
+    {
         other.is_moved_ = true;
     }
 

@@ -11,27 +11,28 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-// Count how often both constructors of ErrorCase and OkCase have been called,
-// so we can check that the move semantics work correctly.
-uint64_t num_constructed = 0;
-uint64_t num_copy_constructed = 0;
-
+// NOLINTBEGIN (cppcoreguidelines-avoid-magic-numbers)
 class ErrorCase : public bowl::Error
 {
 public:
+    // Count how often both constructors of ErrorCase and OkCase have been called,
+    // so we can check that the move semantics work correctly.
+    static int num_constructed;
+    static int num_copy_constructed;
+
     explicit ErrorCase()
     {
-        num_constructed++;
+        ErrorCase::num_constructed++;
     }
 
     ErrorCase(ErrorCase& ErrorCase)
     {
-        num_copy_constructed++;
+        ErrorCase::num_copy_constructed++;
     }
 
     ErrorCase& operator=(ErrorCase&)
     {
-        num_copy_constructed++;
+        ErrorCase::num_copy_constructed++;
         return *this;
     }
 
@@ -46,9 +47,17 @@ public:
     int errnum = 0;
 };
 
+int ErrorCase::num_constructed = 0;
+int ErrorCase::num_copy_constructed = 0;
+
 class OkCase
 {
 public:
+    // Count how often both constructors of ErrorCase and OkCase have been called,
+    // so we can check that the move semantics work correctly.
+    static int num_constructed;
+    static int num_copy_constructed;
+
     explicit OkCase()
     {
         num_constructed++;
@@ -71,11 +80,14 @@ public:
     int payload = 0;
 };
 
+int OkCase::num_constructed = 0;
+int OkCase::num_copy_constructed = 0;
+
 /* Unexpected */
 TEST_CASE("Can unpack Unexpected", "[can_unpack_unexpected]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     ErrorCase ec;
     ec.errnum = 42;
@@ -88,14 +100,14 @@ TEST_CASE("Can unpack Unexpected", "[can_unpack_unexpected]")
 
     REQUIRE_THROWS_AS(unexp.unpack(), bowl::MovedOutException);
 
-    REQUIRE(num_constructed == 2);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 2);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("Can move unexpected", "[can_move_expected]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     ErrorCase ec;
     ec.errnum = 42;
@@ -115,15 +127,15 @@ TEST_CASE("Can move unexpected", "[can_move_expected]")
 
     REQUIRE(ec2.errnum == 42);
 
-    REQUIRE(num_constructed == 2);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 2);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 /* MaybeError */
 TEST_CASE("MaybeError works", "[maybe_error_works]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     ErrorCase ec;
 
@@ -135,14 +147,14 @@ TEST_CASE("MaybeError works", "[maybe_error_works]")
     ErrorCase err = e.unpack_error();
 
     REQUIRE(err.errnum == 42);
-    REQUIRE(num_constructed == 1);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 1);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("MaybeError::ok() work", "[maybe_error_ok_works]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     bowl::MaybeError<ErrorCase> e{};
 
@@ -150,42 +162,42 @@ TEST_CASE("MaybeError::ok() work", "[maybe_error_ok_works]")
 
     REQUIRE_THROWS_AS(e.unpack_error(), bowl::UnpackErrorIfOkException);
 
-    REQUIRE(num_constructed == 0);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 0);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("Can't unpack twice"
           "[maybe_error cant unpack twice]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     bowl::MaybeError<ErrorCase> e{ ErrorCase() };
 
     REQUIRE_NOTHROW(e.unpack_error());
     REQUIRE_THROWS_AS(e.unpack_error(), bowl::MovedOutException);
 
-    REQUIRE(num_constructed == 1);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 1);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("Can construct MaybeError from Unexpected", "[maybe_error from Unexpected]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     bowl::MaybeError<ErrorCase> err{ bowl::Unexpected<ErrorCase>(ErrorCase()) };
 
     REQUIRE(!err.ok());
 
-    REQUIRE(num_constructed == 1);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 1);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("MaybeError::throw_if_error works", "[maybe_error_throw_if_error() works]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     bowl::MaybeError<ErrorCase> err{ ErrorCase() };
 
@@ -195,28 +207,28 @@ TEST_CASE("MaybeError::throw_if_error works", "[maybe_error_throw_if_error() wor
 
     REQUIRE(err2.ok());
 
-    REQUIRE(num_constructed == 1);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 1);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("Can't call MaybeError::throw_if_error twice", "[maybe_error_throw_if_error() works]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     bowl::MaybeError<ErrorCase> err{ ErrorCase() };
 
     REQUIRE(!err.ok());
 
-    REQUIRE(num_constructed == 1);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 1);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("Move on MaybeError works", "[maybe_error_move]")
 {
 
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     ErrorCase ec;
     ec.errnum = 42;
@@ -233,15 +245,15 @@ TEST_CASE("Move on MaybeError works", "[maybe_error_move]")
 
     REQUIRE(ec2.errnum == 42);
 
-    REQUIRE(num_constructed == 2);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 2);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 /* Expected */
 TEST_CASE("Can create ok Expected", "[can_create_ok_expected]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     OkCase ok;
     ok.payload = 52;
@@ -260,14 +272,14 @@ TEST_CASE("Can create ok Expected", "[can_create_ok_expected]")
     REQUIRE_THROWS_AS(ok_expected.unpack_error(), bowl::MovedOutException);
     REQUIRE_THROWS_AS(ok_expected.unpack_ok(), bowl::MovedOutException);
 
-    REQUIRE(num_constructed == 2);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(OkCase::num_constructed == 2);
+    REQUIRE(OkCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("Can create error Expected", "[can_create_error_expected]")
 {
-    num_constructed = 0;
-    num_copy_constructed = 0;
+    ErrorCase::num_constructed = 0;
+    ErrorCase::num_copy_constructed = 0;
 
     ErrorCase ec;
     ec.errnum = 52;
@@ -286,8 +298,8 @@ TEST_CASE("Can create error Expected", "[can_create_error_expected]")
     REQUIRE_THROWS_AS(err_expected.unpack_error(), bowl::MovedOutException);
     REQUIRE_THROWS_AS(err_expected.unpack_ok(), bowl::MovedOutException);
 
-    REQUIRE(num_constructed == 2);
-    REQUIRE(num_copy_constructed == 0);
+    REQUIRE(ErrorCase::num_constructed == 2);
+    REQUIRE(ErrorCase::num_copy_constructed == 0);
 }
 
 TEST_CASE("ErrnoError works", "[errno_error_works]")
@@ -348,3 +360,5 @@ TEST_CASE("CHECK_ASSIGN works")
     REQUIRE(res2.ok());
     REQUIRE(res2.unpack_ok() == 42);
 }
+
+// NOLINTEND

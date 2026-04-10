@@ -23,23 +23,19 @@ public:
     {
     }
 
-    MaybeError(Unexpected<E>&& e) : ok_(false), is_moved_(false), e_(std::move(e.unpack()))
+    MaybeError(Unexpected<E>&& e) : ok_(false), is_moved_(false), e_(std::move(e).unpack())
     {
     }
 
-    MaybeError() : ok_(true), is_moved_(false)
+    MaybeError() : ok_(true), is_moved_(false), placeholder_(0)
     {
     }
 
     MaybeError(MaybeError<E>&) = delete;
     MaybeError<E>& operator=(MaybeError<E>&) = delete;
 
-    MaybeError(MaybeError<E>&& other)
+    MaybeError(MaybeError<E>&& other) noexcept : ok_(other.ok_), is_moved_(other.is_moved_)
     {
-        this->ok_ = other.ok_;
-
-        this->is_moved_ = other.is_moved_;
-
         if (!other.is_moved_)
         {
             this->e_ = std::move(other.e_);
@@ -48,7 +44,7 @@ public:
         other.is_moved_ = true;
     }
 
-    MaybeError& operator=(MaybeError<E>&& other)
+    MaybeError& operator=(MaybeError<E>&& other) noexcept
     {
         this->ok_ = other.ok_;
 

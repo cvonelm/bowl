@@ -32,7 +32,7 @@ public:
      *     return Unexpected(ErrorCase("I'm an error!");
      * }
      */
-    Expected(Unexpected<E>&& e) : ok_(false), e_(std::move(e.unpack())), is_moved_(false)
+    Expected(Unexpected<E>&& e) noexcept : ok_(false), e_(std::move(e).unpack()), is_moved_(false)
     {
     }
 
@@ -42,7 +42,7 @@ public:
      *
      * This is used for the success case.
      */
-    Expected(T&& t) : ok_(true), t_(std::move(t)), is_moved_(false)
+    Expected(T&& t) noexcept : ok_(true), t_(std::move(t)), is_moved_(false)
     {
     }
 
@@ -52,13 +52,11 @@ public:
     Expected(Expected<T, E>&) = delete;
     Expected<T, E>& operator=(Expected<T, E>&) = delete;
 
-    Expected(Expected<T, E>&& other)
+    Expected(Expected<T, E>&& other) noexcept : is_moved_(other.is_moved_), ok_(other.ok_)
     {
-        this->is_moved_ = other.is_moved_;
-
-        if (!other.is_moved_)
+        if (!is_moved_)
         {
-            if (other.ok_)
+            if (ok_)
             {
                 this->t_ = std::move(other.t_);
             }
@@ -68,11 +66,10 @@ public:
             }
         }
 
-        this->ok_ = other.ok_;
         other.is_moved_ = true;
     }
 
-    Expected<T, E>& operator=(Expected<T, E>&& other)
+    Expected<T, E>& operator=(Expected<T, E>&& other) noexcept
     {
         this->is_moved_ = other.is_moved_;
 
@@ -112,7 +109,7 @@ public:
 
         if (!ok_)
         {
-            throw UnpackOkIfErrorException(e_);
+            throw UnpackOkIfErrorException{ e_ };
         }
 
         is_moved_ = true;

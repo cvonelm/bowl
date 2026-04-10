@@ -163,7 +163,15 @@ public:
     /**
      * Give a human-readable representation of the error.
      */
-    virtual std::string display() const = 0;
+    [[nodiscard]] virtual std::string display() const = 0;
+
+    Error() = default;
+    Error(const Error&) = default;
+    Error(Error&&) = default;
+
+    Error& operator=(const Error&) = default;
+    Error& operator=(Error&&) = default;
+    virtual ~Error() = default;
 };
 
 /**
@@ -177,7 +185,13 @@ public:
     {
     }
 
-    std::string display() const override
+    ErrnoError(const ErrnoError&) = default;
+    ErrnoError(ErrnoError&&) = default;
+
+    ErrnoError& operator=(const ErrnoError&) = default;
+    ErrnoError& operator=(ErrnoError&&) = default;
+
+    [[nodiscard]] std::string display() const override
     {
         if (errno_ != Errno::__OK)
         {
@@ -188,6 +202,8 @@ public:
             return "No error!";
         }
     }
+
+    ~ErrnoError() override = default;
 
     enum Errno errnum()
     {
@@ -205,14 +221,22 @@ private:
 class CustomError : public Error
 {
 public:
-    CustomError(std::string str) : str_(str)
+    CustomError(const CustomError&) = default;
+    CustomError(CustomError&&) = default;
+
+    CustomError& operator=(const CustomError&) = default;
+    CustomError& operator=(CustomError&&) = default;
+
+    CustomError(std::string str) : str_(std::move(str))
     {
     }
 
-    std::string display() const override
+    [[nodiscard]] std::string display() const override
     {
         return str_;
     }
+
+    ~CustomError() override = default;
 
 private:
     CustomError()

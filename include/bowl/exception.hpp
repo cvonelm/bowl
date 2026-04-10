@@ -16,7 +16,7 @@ namespace bowl
 class MovedOutException : public std::exception
 {
 public:
-    const char* what() const noexcept override
+    [[nodiscard]] const char* what() const noexcept override
     {
         return "Accessing already moved out type!";
     }
@@ -30,7 +30,7 @@ public:
 class UnpackErrorIfOkException : public std::exception
 {
 public:
-    const char* what() const noexcept override
+    [[nodiscard]] const char* what() const noexcept override
     {
         return "Trying to access unpack_error(), but object was in ok() state!";
     }
@@ -45,13 +45,13 @@ template <class E>
 class UnpackOkIfErrorException : public std::exception
 {
 public:
-    UnpackOkIfErrorException(const E& err)
+    UnpackOkIfErrorException(const E& err) noexcept
+    : what_("Trying to access unpack_ok() but object was in !ok() state, error: " + err.display())
+
     {
-        what_ =
-            "Trying to access unpack_ok() but object was in !ok() state, error: " + err.display();
     }
 
-    const char* what() const noexcept override
+    [[nodiscard]] const char* what() const noexcept override
     {
         return what_.c_str();
     }
