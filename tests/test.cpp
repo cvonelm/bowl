@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Christian von Elm <christian.von_elm@tu-dresden.de>
+//
 // SPDX-License-Identifier: MIT
 
 #include <bowl/error.hpp>
