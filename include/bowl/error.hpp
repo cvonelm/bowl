@@ -239,7 +239,7 @@ public:
     ~CustomError() override = default;
 
 private:
-    CustomError()
+    CustomError() : str_("")
     {
     }
 
